@@ -3,6 +3,7 @@ use brinicle_voices::*;
 #[derive(Default)]
 struct Configuration;
 
+#[derive(Default)]
 struct MockVoice {
     note_on_calls: Vec<(u8, u8)>,
     note_off_calls: Vec<u8>,
@@ -22,17 +23,7 @@ impl Voice for MockVoice {
     }
 
     fn is_running(&self) -> bool {
-        return self.is_running;
-    }
-}
-
-impl Default for MockVoice {
-    fn default() -> MockVoice {
-        return MockVoice {
-            note_on_calls: Vec::new(),
-            note_off_calls: Vec::new(),
-            is_running: false,
-        };
+        self.is_running
     }
 }
 

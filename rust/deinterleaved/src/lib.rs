@@ -5,27 +5,20 @@ use std::ops::Range;
 
 use smallvec::SmallVec;
 
-pub struct AudioBufferMut<'c, 'a: 'c> {
+pub struct AudioBufferMut<'c, 'a> {
     buf: &'c mut [&'a mut [f32]],
 }
 
-fn all_same<I: Iterator>(iter: I) -> bool
+fn all_same<I: Iterator>(mut iter: I) -> bool
 where
     I::Item: PartialEq,
 {
-    let mut v = Option::None;
-    for i in iter {
-        v = match v {
-            Option::None => Some(i),
-            Option::Some(j) => {
-                if i != j {
-                    return false;
-                }
-                Some(j)
-            }
-        }
+    let item = iter.next();
+    if item.is_none() {
+        return true;
     }
-    true
+    let item = item.unwrap();
+    iter.all(|x| x == item)
 }
 
 pub type SubBufferMut<'a> = SmallVec<[&'a mut [f32]; 8]>;
@@ -58,11 +51,12 @@ impl<'c, 'a: 'c> AudioBufferMut<'c, 'a> {
         self.buf.len()
     }
 
-    pub fn split_first_mut<'d>(&'d mut self) -> Option<(&'d mut [f32], AudioBufferMut<'d, 'a>)> {
-        match self.buf.split_first_mut() {
-            None => None,
-            Some((first, rest)) => Some((first, AudioBufferMut { buf: rest })),
-        }
+    pub fn split_first_mut<'d>(
+        &'d mut self,
+    ) -> Option<(&'d mut &'a mut [f32], AudioBufferMut<'d, 'a>)> {
+        self.buf
+            .split_first_mut()
+            .map(|(first, rest)| (first, AudioBufferMut { buf: rest }))
     }
 }
 
@@ -84,7 +78,7 @@ impl<'d, 'c: 'd, 'a: 'c> From<&'d mut AudioBufferMut<'c, 'a>> for AudioBufferMut
     }
 }
 
-pub struct IterMut<'c, 'a: 'c> {
+pub struct IterMut<'c, 'a> {
     iter: std::slice::IterMut<'c, &'a mut [f32]>,
 }
 
@@ -123,7 +117,7 @@ impl<'c, 'a: 'c> IndexMut<usize> for AudioBufferMut<'c, 'a> {
     }
 }
 
-pub struct AudioBuffer<'c, 'a: 'c> {
+pub struct AudioBuffer<'c, 'a> {
     buf: &'c [&'a [f32]],
 }
 
@@ -157,11 +151,10 @@ impl<'c, 'a: 'c> AudioBuffer<'c, 'a> {
         self.buf.len()
     }
 
-    pub fn split_first(&self) -> Option<(&'a [f32], AudioBuffer<'c, 'a>)> {
-        match self.buf.split_first() {
-            None => None,
-            Some((first, rest)) => Some((first, AudioBuffer { buf: rest })),
-        }
+    pub fn split_first(&self) -> Option<(&&'a [f32], AudioBuffer<'c, 'a>)> {
+        self.buf
+            .split_first()
+            .map(|(first, rest)| (first, AudioBuffer { buf: rest }))
     }
 }
 
@@ -189,7 +182,7 @@ impl<'c, 'a: 'c> From<AudioBufferMut<'c, 'a>> for AudioBuffer<'c, 'c> {
     }
 }
 
-pub struct Iter<'c, 'a: 'c> {
+pub struct Iter<'c, 'a> {
     iter: std::slice::Iter<'c, &'a [f32]>,
 }
 

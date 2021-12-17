@@ -1,4 +1,4 @@
-#[warn(nonstandard_style, rust_2018_idioms, future_incompatible)]
+#![warn(nonstandard_style, rust_2018_idioms, future_incompatible)]
 pub mod audio_format;
 pub mod event;
 pub mod kernel_type;
@@ -27,7 +27,7 @@ pub trait Kernel {
         0
     }
 
-    fn process<I>(&mut self, audio: AudioBufferMut, events: I)
+    fn process<I>(&mut self, audio: AudioBufferMut<'_, '_>, events: I)
     where
         I: Iterator<Item = event::Event>;
 

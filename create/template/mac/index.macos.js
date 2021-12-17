@@ -13,7 +13,7 @@ import AUReact from 'brinicle';
 import AUParamKnob from './AUParamKnob.js';
 
 class AUView extends React.Component {
-  state: ?Object;
+  state;
   constructor() {
     super();
     this.state = null;

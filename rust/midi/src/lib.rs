@@ -1,4 +1,4 @@
-#[warn(nonstandard_style, rust_2018_idioms, future_incompatible)]
+#![warn(nonstandard_style, rust_2018_idioms, future_incompatible)]
 
 pub enum Behavior {
     Omni,

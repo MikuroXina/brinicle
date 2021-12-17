@@ -62,10 +62,7 @@ pub fn get_has_bypass_param<K: Kernel>() -> u64 {
 }
 
 pub fn get_bypass_param<K: Kernel>() -> u64 {
-    match K::info().bypass_param {
-        None => 0,
-        Some(n) => n,
-    }
+    K::info().bypass_param.unwrap_or(0)
 }
 
 pub fn get_params<K: Kernel>(
@@ -91,7 +88,7 @@ pub fn get_params<K: Kernel>(
         address: u64,
         name: *const c_char,
         flags: u64,
-        value_strings: *const (*const c_char),
+        value_strings: *const *const c_char,
         num_value_strings: u64,
         default: u64,
         first_dep_param: *const u64,
@@ -163,6 +160,7 @@ pub fn get_kernel_type<K: Kernel>() -> u32 {
     K::info().kernel_type as u32
 }
 
+/// Creates a kernel.
 pub fn create_kernel<K: Kernel>(input_count: u32, output_count: u32, sample_rate: f64) -> *mut K {
     Box::into_raw(Box::new(K::new(brinicle_kernel::AudioFormat {
         input_channel_count: input_count,
@@ -171,25 +169,50 @@ pub fn create_kernel<K: Kernel>(input_count: u32, output_count: u32, sample_rate
     })))
 }
 
+/// Deletes a kernel.
+///
+/// # Safety
+///
+/// The kernel `k` must be made from [`create_kernel`].
 pub unsafe fn delete_kernel<K: Kernel>(k: *mut K) {
     Box::from_raw(k);
 }
 
+/// Sets a kernel parameter to the kernel.
+///
+/// # Safety
+///
+/// The kernel `k` must be made from [`create_kernel`].
 pub unsafe fn set_kernel_parameter<K: Kernel>(k: *mut K, address: u64, value: f64) {
     let k2: &mut K = &mut *k;
     k2.set_parameter(address, value)
 }
 
+/// Gets a kernel parameter from the kernel.
+///
+/// # Safety
+///
+/// The kernel `k` must be made from [`create_kernel`].
 pub unsafe fn get_kernel_parameter<K: Kernel>(k: *const K, address: u64) -> f64 {
     let k2: &K = &*k;
     k2.get_parameter(address)
 }
 
+/// Gets the kernel latency of the kernel.
+///
+/// # Safety
+///
+/// The kernel `k` must be made from [`create_kernel`].
 pub unsafe fn get_kernel_latency<K: Kernel>(k: *const K) -> u64 {
     let k2: &K = &*k;
     k2.get_latency()
 }
 
+/// Resets the kernel.
+///
+/// # Safety
+///
+/// The kernel `k` must be made from [`create_kernel`].
 pub unsafe fn reset_kernel<K: Kernel>(k: *mut K) {
     let k2: &mut K = &mut *k;
     k2.reset();
@@ -248,6 +271,11 @@ impl Iterator for GlueEventStream {
     }
 }
 
+/// Gets the kernel latency of the kernel.
+///
+/// # Safety
+///
+/// The kernel `k` must be made from [`create_kernel`]. `data` must be a valid pointer refers the array having the length of `chans * samples`.
 pub unsafe fn process_kernel<K: Kernel>(
     k: *mut K,
     data: *mut *mut f32,

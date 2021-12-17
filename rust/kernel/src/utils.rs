@@ -1,15 +1,15 @@
 use super::event;
 use super::AudioBufferMut;
 
-pub enum EventOrAudio<'c, 'a: 'c> {
+pub enum EventOrAudio<'c, 'a> {
     Event(event::Event),
     Audio(AudioBufferMut<'c, 'a>),
 }
 
-pub fn run_split_at_events<I, F>(mut audio: AudioBufferMut, events: I, mut f: F)
+pub fn run_split_at_events<I, F>(mut audio: AudioBufferMut<'_, '_>, events: I, mut f: F)
 where
     I: Iterator<Item = event::Event>,
-    F: FnMut(EventOrAudio),
+    F: FnMut(EventOrAudio<'_, '_>),
 {
     let buffer_len = audio.len();
 

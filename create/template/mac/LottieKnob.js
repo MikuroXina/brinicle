@@ -1,10 +1,10 @@
-import React from 'react';
+import React, {Component} from 'react';
 import {
   PanResponder,
 } from 'react-native';
 import LottieView from 'lottie-react-native';
 
-export default class LottieKnob extends React.Component {
+export default class LottieKnob extends Component {
   constructor(props) {
     super(props);
     this.gestureData = null;

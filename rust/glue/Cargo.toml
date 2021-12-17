@@ -3,7 +3,7 @@ authors = ["Russell McClellan <russell.mcclellan@gmail.com>"]
 name = "brinicle_glue"
 license = "MIT"
 version = "1.0.0"
-edition = "2018"
+edition = "2021"
 repository = "https://github.com/russellmcc/brinicle"
 description = "Code for gluing brinicle rust projects to C."
 
