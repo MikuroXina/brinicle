@@ -44,8 +44,9 @@ class KernelManager extends EventEmitter {
 
   /**
    * If loaded, calls f on next event loop.  Otherwise, calls f when loaded.
+   * @param {Function} f The callback.
    */
-  onload(f: () => void) {
+  onload(f) {
     if (this.loaded) {
       setTimeout(f);
     } else {
@@ -53,7 +54,12 @@ class KernelManager extends EventEmitter {
     }
   }
 
-  setParameter(identifier: string, value: number) {
+  /**
+   *
+   * @param {string} identifier
+   * @param {number} value
+   */
+  setParameter(identifier, value) {
     if (!this.loaded) {
       return;
     }
@@ -65,30 +71,44 @@ class KernelManager extends EventEmitter {
     this.emit('changed');
   }
 
-  grabParameter(identifier: string) : Promise<number> {
-    return KernelRCTManager.grabParameter(identifier).then((g) => {
-      this.grabs[g] = identifier;
-      return g;
-    });
+  /**
+   * Grabs the parameter of the given identifier.
+   * @param {string} identifier
+   * @returns {Promise<number>} Resolved with the grab number of the given identifier.
+   */
+  async grabParameter(identifier) {
+    const g = await KernelRCTManager.grabParameter(identifier);
+    this.grabs[g] = identifier;
+    return g;
   }
 
-  moveGrabbedParameter(grab: number, value: number) : Promise<void> {
-    return KernelRCTManager.moveGrabbedParameter(grab, value).then(() => {
-      if (this.grabs[grab]) {
-        const identifier = this.grabs[grab];
-        if (this.parameters[identifier] == value) {
-          return;
-        }
-        this.parameters[identifier] = value;
-        this.emit('changed');
-      }
-    });
+  /**
+   * Moves the grabbed parameter with the given value.
+   * @param {number} grab The grab number.
+   * @param {number} value The value to overwrite.
+   * @returns {Promise<void>} Resolved when the movement is done.
+   */
+  async moveGrabbedParameter(grab, value) {
+    await KernelRCTManager.moveGrabbedParameter(grab, value);
+    if (!this.grabs[grab]) {
+      return;
+    }
+    const identifier = this.grabs[grab];
+    if (this.parameters[identifier] == value) {
+      return;
+    }
+    this.parameters[identifier] = value;
+    this.emit('changed');
   }
 
-  ungrabParameter(grab: number) : Promise<void> {
-    return KernelRCTManager.ungrabParameter(grab).then(() => {
+  /**
+   *
+   * @param {number} grab The grab number.
+   * @returns {Promise<void>} Resolved when the ungrabbing is done.
+   */
+  async ungrabParameter(grab) {
+    await KernelRCTManager.ungrabParameter(grab);
       delete this.grabs[grab];
-    });
   }
 
 };
